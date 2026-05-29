@@ -22,17 +22,17 @@ void Hardware_Init(void);
 void Read_Card(void);
 void Check_Card(void);
 
-char oled_str[50];
-volatile uint8_t clear_from = 0;
-volatile uint8_t clear_to   = 0;
-volatile uint8_t clear_req  = 0;
-u8 tempcard = 10;
-extern u8 RFIDCard[12];
-u8 ID_temp[10][12];
-Object new_objetct[9];
-int flash_w_flag = -1;
-extern u8 RFID_buf[512];
-extern int8_t RSSI;
+char oled_str[50];                      //OLED显示缓冲区
+volatile uint8_t clear_from = 0;        //需要清除的起始行
+volatile uint8_t clear_to   = 0;        //需要清除的结束行
+volatile uint8_t clear_req  = 0;        //清除请求标志，TIM2中断服务程序设置为1，主循环检测后清除为0
+u8 tempcard = 10;                       //临时变量，记录当前卡号在FLASH中的位置，0-8为对应位置，9为满了，10为未找到
+extern u8 RFIDCard[12];                 //当前读到的卡号
+u8 ID_temp[10][12];                     //临时变量，记录FLASH中存储的卡号，10行对应10个位置，12列对应64位卡号的12个字节
+Object new_objetct[9];                  //当前的9个对象，包含卡号、RSSI等信息
+int flash_w_flag = -1;                  //FLASH写入标志，-1表示不需要写入，0-8表示需要重写对应位置的卡号
+extern u8 RFID_buf[512];                //RFID接收缓冲区
+extern int8_t RSSI;                     //当前读到的卡的RSSI值
 
 
 
@@ -52,7 +52,7 @@ volatile int lost_heartbeat = 0;        /* 替代原来的 disconnect */
 static uint32_t last_keepalive = 0;     /* 应用层保活计时（5分钟发送一次） */
 /* ADD END */
 
-volatile u8 search = 0;
+volatile u8 search = 0;                 //读卡标志，0为暂停，1为读卡中
 
 int main(void)
 {

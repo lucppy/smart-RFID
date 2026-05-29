@@ -1,19 +1,19 @@
-//µ¥Æ¬»úÍ·ÎÄ¼þ
+//ï¿½ï¿½Æ¬ï¿½ï¿½Í·ï¿½Ä¼ï¿½
 #include "stm32f10x.h"
 
-//ÍøÂçÉè±¸
+//ï¿½ï¿½ï¿½ï¿½ï¿½è±¸
 #include "esp8266.h"
 
-//Ð­ÒéÎÄ¼þ
+//Ð­ï¿½ï¿½ï¿½Ä¼ï¿½
 #include "Broker.h"
 #include "mqttkit.h"
 #include "Object.h"
 
-//Ó²¼þÇý¶¯
+//Ó²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #include "usart.h"
 #include "delay.h"
 
-//C¿â
+//Cï¿½ï¿½
 #include <string.h>
 #include <stdio.h>
 #include "cJSON.h"
@@ -32,7 +32,7 @@ u8 respond = 0;
 extern Send_Setting send_settting;
 extern int flash_w_flag;
 extern int8_t RSSI;
-/*  ADD BEGIN - ÓÅ»¯ºóµÄÐÄÌøÓë¶ÏÏß¼ÆÊý */
+/*  ADD BEGIN - ï¿½Å»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ */
 //extern volatile int disconnect;
 extern volatile int lost_heartbeat;   
 /* ADD END */
@@ -42,20 +42,20 @@ extern volatile uint8_t clear_to   ;
 extern volatile uint8_t clear_req  ;
 
 //==========================================================
-//	º¯ÊýÃû³Æ£º	Broker_Link
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½	Broker_Link
 //
-//	º¯Êý¹¦ÄÜ£º	Óëbroker´´½¨Á¬½Ó
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½	ï¿½ï¿½brokerï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //
-//	Èë¿Ú²ÎÊý£º	ÎÞ
+//	ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½
 //
-//	·µ»Ø²ÎÊý£º	1-³É¹¦	0-Ê§°Ü
+//	ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½	1-ï¿½É¹ï¿½	0-Ê§ï¿½ï¿½
 //
-//	ËµÃ÷£º		ÓëbrokerÆ½Ì¨½¨Á¢Á¬½Ó
+//	Ëµï¿½ï¿½ï¿½ï¿½		ï¿½ï¿½brokerÆ½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //==========================================================
 _Bool Broker_Link(void)
 {
 
-    MQTT_PACKET_STRUCTURE mqttPacket = {NULL, 0, 0, 0};					//Ð­Òé°ü
+    MQTT_PACKET_STRUCTURE mqttPacket = {NULL, 0, 0, 0};					//Ð­ï¿½ï¿½ï¿½
 
     unsigned char *dataPtr;
 
@@ -66,8 +66,8 @@ _Bool Broker_Link(void)
 
     if(MQTT_PacketConnect(PROID, authorization_buf, DEVICE_NAME, 60, 1, MQTT_QOS_LEVEL0, NULL, NULL, 0, &mqttPacket) == 0)
     {
-        ESP8266_SendData(mqttPacket._data, mqttPacket._len);//ÉÏ´«Æ½Ì¨
-        dataPtr = ESP8266_GetIPD(250);									//µÈ´ýÆ½Ì¨ÏìÓ¦
+        ESP8266_SendData(mqttPacket._data, mqttPacket._len);//ï¿½Ï´ï¿½Æ½Ì¨
+        dataPtr = ESP8266_GetIPD(250);									//ï¿½È´ï¿½Æ½Ì¨ï¿½ï¿½Ó¦
         if(dataPtr != NULL)
         {
             if(MQTT_UnPacketRecv(dataPtr) == MQTT_PKT_CONNACK)
@@ -75,34 +75,34 @@ _Bool Broker_Link(void)
                 switch(MQTT_UnPacketConnectAck(dataPtr))
                 {
                     case 0:
-                        UsartPrintf(USART_DEBUG, "Tips:	Á¬½Ó³É¹¦\r\n");
+                        UsartPrintf(USART_DEBUG, "Tips:	ï¿½ï¿½ï¿½Ó³É¹ï¿½\r\n");
                         status = 0;
                         break;
 
                     case 1:
-                        UsartPrintf(USART_DEBUG, "WARN:	Á¬½ÓÊ§°Ü£ºÐ­Òé´íÎó\r\n");
+                        UsartPrintf(USART_DEBUG, "WARN:	ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½Ð­ï¿½ï¿½ï¿½ï¿½ï¿½\r\n");
                         break;
                     case 2:
-                        UsartPrintf(USART_DEBUG, "WARN:	Á¬½ÓÊ§°Ü£º·Ç·¨µÄclientid\r\n");
+                        UsartPrintf(USART_DEBUG, "WARN:	ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½ï¿½Ç·ï¿½ï¿½ï¿½clientid\r\n");
                         break;
                     case 3:
-                        UsartPrintf(USART_DEBUG, "WARN:	Á¬½ÓÊ§°Ü£º·þÎñÆ÷Ê§°Ü\r\n");
+                        UsartPrintf(USART_DEBUG, "WARN:	ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½\r\n");
                         break;
                     case 4:
-                        UsartPrintf(USART_DEBUG, "WARN:	Á¬½ÓÊ§°Ü£ºÓÃ»§Ãû»òÃÜÂë´íÎó\r\n");
+                        UsartPrintf(USART_DEBUG, "WARN:	ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\r\n");
                         break;
                     case 5:
-                        UsartPrintf(USART_DEBUG, "WARN:	Á¬½ÓÊ§°Ü£º·Ç·¨Á´½Ó(±ÈÈçtoken·Ç·¨)\r\n");
+                        UsartPrintf(USART_DEBUG, "WARN:	ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½tokenï¿½Ç·ï¿½)\r\n");
                         break;
 
                     default:
-                        UsartPrintf(USART_DEBUG, "ERR:	Á¬½ÓÊ§°Ü£ºÎ´Öª´íÎó\r\n");
+                        UsartPrintf(USART_DEBUG, "ERR:	ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½Î´Öªï¿½ï¿½ï¿½ï¿½\r\n");
                         break;
                 }
             }
         }
 
-        MQTT_DeleteBuffer(&mqttPacket);								//É¾°ü
+        MQTT_DeleteBuffer(&mqttPacket);								//É¾ï¿½ï¿½
     }
     else
         UsartPrintf(USART_DEBUG, "WARN:	MQTT_PacketConnect Failed\r\n");
@@ -188,20 +188,20 @@ uint32_t Broker_FillBuf(char *buf)
 }
 
 //==========================================================
-//	º¯ÊýÃû³Æ£º	Broker_SendData
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½	Broker_SendData
 //
-//	º¯Êý¹¦ÄÜ£º	ÉÏ´«Êý¾Ýµ½ÏûÏ¢´úÀí·þÎñÆ÷
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½	ï¿½Ï´ï¿½ï¿½ï¿½ï¿½Ýµï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //
-//	Èë¿Ú²ÎÊý£º	type£º·¢ËÍÊý¾ÝµÄ¸ñÊ½
+//	ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½	typeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝµÄ¸ï¿½Ê½
 //
-//	·µ»Ø²ÎÊý£º	ÎÞ
+//	ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½
 //
-//	ËµÃ÷£º
+//	Ëµï¿½ï¿½ï¿½ï¿½
 //==========================================================
 void Broker_SendData(void)
 {
 
-    MQTT_PACKET_STRUCTURE mqttPacket = {NULL, 0, 0, 0};												//Ð­Òé°ü
+    MQTT_PACKET_STRUCTURE mqttPacket = {NULL, 0, 0, 0};												//Ð­ï¿½ï¿½ï¿½
 
     char buf[512];
 
@@ -211,18 +211,18 @@ void Broker_SendData(void)
 
     //    UsartPrintf(USART_DEBUG, "SendData: begin\r\n");
     memset(buf, 0, sizeof(buf));
-    body_len = Broker_FillBuf(buf);		//»ñÈ¡µ±Ç°ÐèÒª·¢ËÍµÄÊý¾ÝÁ÷µÄ×Ü³¤¶È
+    body_len = Broker_FillBuf(buf);		//ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½Òªï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü³ï¿½ï¿½ï¿½
     //    UsartPrintf(USART_DEBUG, "FillBuf Done, len=%d\r\n", body_len);
     if(body_len)
     {
         //		UsartPrintf(USART_DEBUG, "Packing data...\r\n");
-        if(MQTT_PacketSaveData(PROID, DEVICE_NAME, body_len, NULL, &mqttPacket) == 0)				//·â°ü
+        if(MQTT_PacketSaveData(PROID, DEVICE_NAME, body_len, NULL, &mqttPacket) == 0)				//ï¿½ï¿½ï¿½
         {
             for(; i < body_len; i++)
                 mqttPacket._data[mqttPacket._len++] = buf[i];
 
-            ESP8266_SendData(mqttPacket._data, mqttPacket._len);									//ÉÏ´«Êý¾Ý
-            MQTT_DeleteBuffer(&mqttPacket);															//É¾°ü
+            ESP8266_SendData(mqttPacket._data, mqttPacket._len);									//ï¿½Ï´ï¿½ï¿½ï¿½ï¿½ï¿½
+            MQTT_DeleteBuffer(&mqttPacket);															//É¾ï¿½ï¿½
         }
         else
             UsartPrintf(USART_DEBUG, "WARN:	EDP_NewBuffer Failed\r\n");
@@ -231,48 +231,48 @@ void Broker_SendData(void)
 }
 
 //==========================================================
-//	º¯ÊýÃû³Æ£º	Broker_Publish
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½	Broker_Publish
 //
-//	º¯Êý¹¦ÄÜ£º	·¢²¼ÏûÏ¢
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 //
-//	Èë¿Ú²ÎÊý£º	topic£º·¢²¼µÄÖ÷Ìâ
-//				msg£ºÏûÏ¢ÄÚÈÝ
+//	ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½	topicï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//				msgï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 //
-//	·µ»Ø²ÎÊý£º	ÎÞ
+//	ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½
 //
-//	ËµÃ÷£º
+//	Ëµï¿½ï¿½ï¿½ï¿½
 //==========================================================
 void Broker_Publish(const char *topic, const char *msg)
 {
 
-    MQTT_PACKET_STRUCTURE mqtt_packet = {NULL, 0, 0, 0};						//Ð­Òé°ü
+    MQTT_PACKET_STRUCTURE mqtt_packet = {NULL, 0, 0, 0};						//Ð­ï¿½ï¿½ï¿½
 
     UsartPrintf(USART_DEBUG, "Publish Topic: %s, Msg: %s\r\n", topic, msg);
 
     if(MQTT_PacketPublish(MQTT_PUBLISH_ID, topic, msg, strlen(msg), MQTT_QOS_LEVEL0, 0, 1, &mqtt_packet) == 0)
     {
-        ESP8266_SendData(mqtt_packet._data, mqtt_packet._len);					//ÏòÆ½Ì¨·¢ËÍ¶©ÔÄÇëÇó
+        ESP8266_SendData(mqtt_packet._data, mqtt_packet._len);					//ï¿½ï¿½Æ½Ì¨ï¿½ï¿½ï¿½Í¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-        MQTT_DeleteBuffer(&mqtt_packet);										//É¾°ü
+        MQTT_DeleteBuffer(&mqtt_packet);										//É¾ï¿½ï¿½
     }
 
 }
 
 //==========================================================
-//	º¯ÊýÃû³Æ£º	Broker_Subscribe
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½	Broker_Subscribe
 //
-//	º¯Êý¹¦ÄÜ£º	¶©ÔÄ
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½	ï¿½ï¿½ï¿½ï¿½
 //
-//	Èë¿Ú²ÎÊý£º	ÎÞ
+//	ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½
 //
-//	·µ»Ø²ÎÊý£º	ÎÞ
+//	ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½
 //
-//	ËµÃ÷£º
+//	Ëµï¿½ï¿½ï¿½ï¿½
 //==========================================================
 void Broker_Subscribe(void)
 {
 
-    MQTT_PACKET_STRUCTURE mqtt_packet = {NULL, 0, 0, 0};						//Ð­Òé°ü
+    MQTT_PACKET_STRUCTURE mqtt_packet = {NULL, 0, 0, 0};						//Ð­ï¿½ï¿½ï¿½
 
     char topic_buf[56];
     const char *topic = topic_buf;
@@ -283,48 +283,48 @@ void Broker_Subscribe(void)
 
     if(MQTT_PacketSubscribe(MQTT_SUBSCRIBE_ID, MQTT_QOS_LEVEL0, &topic, 1, &mqtt_packet) == 0)
     {
-        ESP8266_SendData(mqtt_packet._data, mqtt_packet._len);					//ÏòÆ½Ì¨·¢ËÍ¶©ÔÄÇëÇó
+        ESP8266_SendData(mqtt_packet._data, mqtt_packet._len);					//ï¿½ï¿½Æ½Ì¨ï¿½ï¿½ï¿½Í¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-        MQTT_DeleteBuffer(&mqtt_packet);										//É¾°ü
+        MQTT_DeleteBuffer(&mqtt_packet);										//É¾ï¿½ï¿½
     }
 
 }
 
 //==========================================================
-//	º¯ÊýÃû³Æ£º	Broker_Ping
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½	Broker_Ping
 //
-//	º¯Êý¹¦ÄÜ£º	ÐÄÌøÇëÇó
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //
-//	Èë¿Ú²ÎÊý£º	ÎÞ
+//	ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½
 //
-//	·µ»Ø²ÎÊý£º	ÎÞ
+//	ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½
 //
-//	ËµÃ÷£º
+//	Ëµï¿½ï¿½ï¿½ï¿½
 //==========================================================
 void Broker_Ping(void)
 {
 
-    MQTT_PACKET_STRUCTURE mqtt_packet = {NULL, 0, 0, 0};						//Ð­Òé°ü
+    MQTT_PACKET_STRUCTURE mqtt_packet = {NULL, 0, 0, 0};						//Ð­ï¿½ï¿½ï¿½
 
     if(MQTT_PacketPing(&mqtt_packet) == 0)
     {
-        ESP8266_SendData(mqtt_packet._data, mqtt_packet._len);					//ÏòÆ½Ì¨·¢ËÍ¶©ÔÄÇëÇó
+        ESP8266_SendData(mqtt_packet._data, mqtt_packet._len);					//ï¿½ï¿½Æ½Ì¨ï¿½ï¿½ï¿½Í¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-        MQTT_DeleteBuffer(&mqtt_packet);										//É¾°ü
+        MQTT_DeleteBuffer(&mqtt_packet);										//É¾ï¿½ï¿½
     }
 
 }
 
 //==========================================================
-//	º¯ÊýÃû³Æ£º	Broker_RevPro
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½	Broker_RevPro
 //
-//	º¯Êý¹¦ÄÜ£º	¶©ÔÄµÄÏûÏ¢½âÎö
+//	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½	ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 //
-//	Èë¿Ú²ÎÊý£º	dataPtr£º¶©ÔÄµÄÏûÏ¢
+//	ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½	dataPtrï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½Ï¢
 //
-//	·µ»Ø²ÎÊý£º	ÎÞ
+//	ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½
 //
-//	ËµÃ÷£º
+//	Ëµï¿½ï¿½ï¿½ï¿½
 //==========================================================
 void Broker_RevPro(unsigned char *cmd)
 {
@@ -348,7 +348,7 @@ void Broker_RevPro(unsigned char *cmd)
     type = MQTT_UnPacketRecv(cmd);
     switch(type)
     {
-        case MQTT_PKT_PUBLISH:																//½ÓÊÕµÄPublishÏûÏ¢
+        case MQTT_PKT_PUBLISH:																//ï¿½ï¿½ï¿½Õµï¿½Publishï¿½ï¿½Ï¢
 
             result = MQTT_UnPacketPublish(cmd, &cmdid_topic, &topic_len, &req_payload, &req_len, &qos, &pkt_id);
             if(result == 0)
@@ -391,17 +391,17 @@ void Broker_RevPro(unsigned char *cmd)
                 break;
             }
 
-        case MQTT_PKT_PUBACK:														//·¢ËÍPublishÏûÏ¢£¬·þÎñÆ÷»Ø¸´µÄAck
+        case MQTT_PKT_PUBACK:														//ï¿½ï¿½ï¿½ï¿½Publishï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Ack
 
             if(MQTT_UnPacketPublishAck(cmd) == 1)
             {
-                disconnect = 0;
+                lost_heartbeat = 0;
                 UsartPrintf(USART_DEBUG, "Tips:	MQTT Publish Send OK\r\n");
             }
 
             break;
 
-        case MQTT_PKT_SUBACK:																//·¢ËÍSubscribeÏûÏ¢µÄAck
+        case MQTT_PKT_SUBACK:																//ï¿½ï¿½ï¿½ï¿½Subscribeï¿½ï¿½Ï¢ï¿½ï¿½Ack
 
             if(MQTT_UnPacketSubscribe(cmd) == 0)
                 UsartPrintf(USART_DEBUG, "Tips:	MQTT Subscribe OK\r\n");
@@ -410,12 +410,12 @@ void Broker_RevPro(unsigned char *cmd)
             break;
 
         /*ADD BRGIN*/
-        /*case MQTT_PKT_PINGRESP:																//·¢ËÍpingÏûÏ¢µÄAck
+        /*case MQTT_PKT_PINGRESP:																//ï¿½ï¿½ï¿½ï¿½pingï¿½ï¿½Ï¢ï¿½ï¿½Ack
             disconnect--;
             UsartPrintf(USART_DEBUG, "Tips:	MQTT ping OK\r\n");
             break;*/
-        case MQTT_PKT_PINGRESP:                                                             /* ·¢ËÍpingÏûÏ¢µÄAck */
-            /* ADD BEGIN - ÖØÖÃÐÄÌø¶ªÊ§¼ÆÊý */
+        case MQTT_PKT_PINGRESP:                                                             /* ï¿½ï¿½ï¿½ï¿½pingï¿½ï¿½Ï¢ï¿½ï¿½Ack */
+            /* ADD BEGIN - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½ï¿½ï¿½ */
             lost_heartbeat = 0;
             /* ADD END */
             UsartPrintf(USART_DEBUG, "Tips:	MQTT ping OK\r\n");
@@ -427,19 +427,19 @@ void Broker_RevPro(unsigned char *cmd)
             break;
     }
 
-    ESP8266_Clear();									//Çå¿Õ»º´æ
+    ESP8266_Clear();									//ï¿½ï¿½Õ»ï¿½ï¿½ï¿½
 
     if(result == -1)
         return;
 
 }
 
-/* ADD BEGIN - Ó¦ÓÃ²ã±£»îÏûÏ¢ */
+/* ADD BEGIN - Ó¦ï¿½Ã²ã±£ï¿½ï¿½ï¿½ï¿½Ï¢ */
 /**
-  * @brief   ·¢ËÍÓ¦ÓÃ²ã±£»îÏûÏ¢£¬·ÀÖ¹ÊÖ»úÈÈµã NAT ³¬Ê±µ¼ÖÂ MQTT Á¬½Ó¶Ï¿ª
-  * @param   ÎÞ
-  * @retval  ÎÞ
-  * @note    ·¢ËÍ¿Õ JSON {} µ½ asset/keepalive Ö÷Ìâ£¬ºó¶Ë¿ÉºöÂÔ
+  * @brief   ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã²ã±£ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Ö¹ï¿½Ö»ï¿½ï¿½Èµï¿½ NAT ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ MQTT ï¿½ï¿½ï¿½Ó¶Ï¿ï¿½
+  * @param   ï¿½ï¿½
+  * @retval  ï¿½ï¿½
+  * @note    ï¿½ï¿½ï¿½Í¿ï¿½ JSON {} ï¿½ï¿½ asset/keepalive ï¿½ï¿½ï¿½â£¬ï¿½ï¿½Ë¿Éºï¿½ï¿½ï¿½
   */
 void Broker_SendKeepAlive(void)
 {
