@@ -1,0 +1,49 @@
+.\output\broker.o: NET\Broker\src\Broker.c
+.\output\broker.o: .\core\at32f403a_407.h
+.\output\broker.o: .\core\RTE_Components.h
+.\output\broker.o: .\core\core_cm4.h
+.\output\broker.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\stdint.h
+.\output\broker.o: .\core\cmsis_version.h
+.\output\broker.o: .\core\cmsis_compiler.h
+.\output\broker.o: .\core\cmsis_armcc.h
+.\output\broker.o: .\core\mpu_armv7.h
+.\output\broker.o: .\core\system_at32f403a_407.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_def.h
+.\output\broker.o: .\core\at32f403a_407_conf.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_crm.h
+.\output\broker.o: .\core\at32f403a_407.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_tmr.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_rtc.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_bpr.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_gpio.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_i2c.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_usart.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_pwc.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_can.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_adc.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_dac.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_spi.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_dma.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_debug.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_flash.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_crc.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_wwdt.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_wdt.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_exint.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_sdio.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_xmc.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_acc.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_misc.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_usb.h
+.\output\broker.o: .\fwlib\inc\at32f403a_407_emac.h
+.\output\broker.o: .\NET\device\inc\esp8266.h
+.\output\broker.o: .\NET\Broker\inc\Broker.h
+.\output\broker.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\stdio.h
+.\output\broker.o: .\NET\MQTT\mqttkit.h
+.\output\broker.o: .\NET\MQTT\Common.h
+.\output\broker.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\stdlib.h
+.\output\broker.o: .\user\Object.h
+.\output\broker.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\string.h
+.\output\broker.o: .\hardware\inc\usart.h
+.\output\broker.o: .\hardware\inc\delay.h
+.\output\broker.o: .\NET\CJSON\cJSON.h

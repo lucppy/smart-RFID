@@ -1,0 +1,46 @@
+.\output\esp8266.o: NET\device\src\esp8266.c
+.\output\esp8266.o: .\core\at32f403a_407.h
+.\output\esp8266.o: .\core\RTE_Components.h
+.\output\esp8266.o: .\core\core_cm4.h
+.\output\esp8266.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\stdint.h
+.\output\esp8266.o: .\core\cmsis_version.h
+.\output\esp8266.o: .\core\cmsis_compiler.h
+.\output\esp8266.o: .\core\cmsis_armcc.h
+.\output\esp8266.o: .\core\mpu_armv7.h
+.\output\esp8266.o: .\core\system_at32f403a_407.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_def.h
+.\output\esp8266.o: .\core\at32f403a_407_conf.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_crm.h
+.\output\esp8266.o: .\core\at32f403a_407.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_tmr.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_rtc.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_bpr.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_gpio.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_i2c.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_usart.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_pwc.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_can.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_adc.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_dac.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_spi.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_dma.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_debug.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_flash.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_crc.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_wwdt.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_wdt.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_exint.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_sdio.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_xmc.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_acc.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_misc.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_usb.h
+.\output\esp8266.o: .\fwlib\inc\at32f403a_407_emac.h
+.\output\esp8266.o: .\NET\device\inc\esp8266.h
+.\output\esp8266.o: .\hardware\inc\usart.h
+.\output\esp8266.o: .\OLED\oled.h
+.\output\esp8266.o: .\system\timer.h
+.\output\esp8266.o: .\hardware\inc\delay.h
+.\output\esp8266.o: .\system\Flash.h
+.\output\esp8266.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\string.h
+.\output\esp8266.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\stdio.h
