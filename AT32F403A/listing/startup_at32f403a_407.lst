@@ -626,7 +626,7 @@ interwork --depend=.\output\startup_at32f403a_407.d -o.\output\startup_at32f403
 a_407.o -I.\RTE\_AT32F403A -I"D:\keil\Keil MDK\pack\ARM\CMSIS\5.9.0\CMSIS\Core\
 Include" -I"D:\keil\Keil MDK\pack\ArteryTek\AT32F403A_407_DFP\2.2.3\Device\Incl
 ude" --predefine="__UVISION_VERSION SETA 539" --predefine="_RTE_ SETA 1" --pred
-efine="AT32F403ACGT7 SETA 1" --predefine="_RTE_ SETA 1" --list=.\listing\startu
+efine="AT32F403ACCT7 SETA 1" --predefine="_RTE_ SETA 1" --list=.\listing\startu
 p_at32f403a_407.lst core\startup\arm\startup_at32f403a_407.s
 
 

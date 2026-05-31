@@ -24,7 +24,7 @@
                 "d:\\github_\\smart-RFID\\AT32F403A\\NET\\device\\src"
             ],
             "defines": [
-                "AT32F403ACGT7",
+                "AT32F403ACCT7",
                 "__CC_ARM",
                 "__arm__",
                 "__align(x)=",
