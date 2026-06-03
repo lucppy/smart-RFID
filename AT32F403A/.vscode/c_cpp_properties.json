@@ -98,7 +98,7 @@
                 "__yield()=",
                 "__vfp_status(x,y)=0"
             ],
-            "intelliSenseMode": "arm",
+            "intelliSenseMode": "${default}",
             "compilerPath": "D:/keil/Keil MDK/core/ARM/ARMCC/bin/armcc.exe"
         }
     ],
