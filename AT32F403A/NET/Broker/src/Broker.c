@@ -32,10 +32,7 @@ u8 respond = 0;
 extern Send_Setting send_settting;
 extern int flash_w_flag;
 extern int8_t RSSI;
-/*  ADD BEGIN - �Ż������������߼��� */
-//extern volatile int disconnect;
-extern volatile int lost_heartbeat;   
-/* ADD END */
+extern volatile int disconnect;
 extern volatile u8 search;
 extern volatile uint8_t clear_from ;
 extern volatile uint8_t clear_to   ;
@@ -395,7 +392,7 @@ void Broker_RevPro(unsigned char *cmd)
 
             if(MQTT_UnPacketPublishAck(cmd) == 1)
             {
-                lost_heartbeat = 0;
+                disconnect = 0;
                 UsartPrintf(USART_DEBUG, "Tips:	MQTT Publish Send OK\r\n");
             }
 
@@ -410,17 +407,10 @@ void Broker_RevPro(unsigned char *cmd)
             break;
 
         /*ADD BRGIN*/
-        /*case MQTT_PKT_PINGRESP:																//����ping��Ϣ��Ack
+        case MQTT_PKT_PINGRESP:																//����ping��Ϣ��Ack
             disconnect--;
             UsartPrintf(USART_DEBUG, "Tips:	MQTT ping OK\r\n");
-            break;*/
-        case MQTT_PKT_PINGRESP:                                                             /* ����ping��Ϣ��Ack */
-            /* ADD BEGIN - ����������ʧ���� */
-            lost_heartbeat = 0;
-            /* ADD END */
-            UsartPrintf(USART_DEBUG, "Tips:	MQTT ping OK\r\n");
             break;
-        /*ADD END*/
 
         default:
             result = -1;
@@ -434,24 +424,3 @@ void Broker_RevPro(unsigned char *cmd)
 
 }
 
-/* ADD BEGIN - Ӧ�ò㱣����Ϣ */
-/**
-  * @brief   ����Ӧ�ò㱣����Ϣ����ֹ�ֻ��ȵ� NAT ��ʱ���� MQTT ���ӶϿ�
-  * @param   ��
-  * @retval  ��
-  * @note    ���Ϳ� JSON {} �� asset/keepalive ���⣬��˿ɺ���
-  */
-void Broker_SendKeepAlive(void)
-{
-    MQTT_PACKET_STRUCTURE mqttPacket = { NULL, 0, 0, 0 };
-    const char* topic = "asset/keepalive";
-    const char* msg = "{}";
-
-    if (MQTT_PacketPublish(MQTT_PUBLISH_ID, topic, msg, strlen(msg),
-        MQTT_QOS_LEVEL0, 0, 1, &mqttPacket) == 0) {
-        ESP8266_SendData(mqttPacket._data, mqttPacket._len);
-        MQTT_DeleteBuffer(&mqttPacket);
-        UsartPrintf(USART_DEBUG, "Sent KeepAlive\n");
-    }
-}
-/* ADD END */

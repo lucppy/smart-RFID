@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>AT32F403ACCT7</Define>
               <Undefine></Undefine>
-              <IncludePath>.\RTE\_AT32F403A;.\core;.\fwlib\inc;.\hardware\inc;.\user;.\NET\onenet\inc;.\NET\MQTT;.\NET\device\inc;.\NET\CJSON;.\OLED;.\Serial;.\system;.\RFID;.\NET\Broker\inc</IncludePath>
+              <IncludePath>.\RTE\_AT32F403A;.\core;.\fwlib\inc;.\hardware\inc;.\user;.\NET\MQTT;.\NET\device\inc;.\NET\CJSON;.\OLED;.\system;.\RFID;.\NET\Broker\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

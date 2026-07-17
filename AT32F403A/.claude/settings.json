@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/Users/abc/Desktop/**)"
+      "Read(//c/Users/abc/Desktop/**)",
+      "Bash(ls \"D:/Projects/\" 2>/dev/null | head -20)",
+      "Read(//d/Projects/**)"
     ],
     "additionalDirectories": [
       "C:\\Users\\abc\\Desktop"

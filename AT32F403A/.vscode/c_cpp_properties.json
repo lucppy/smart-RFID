@@ -98,8 +98,8 @@
                 "__yield()=",
                 "__vfp_status(x,y)=0"
             ],
-            "intelliSenseMode": "${default}",
-            "compilerPath": "D:/keil/Keil MDK/core/ARM/ARMCC/bin/armcc.exe"
+            "intelliSenseMode": "gcc-arm",
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe"
         }
     ],
     "version": 4

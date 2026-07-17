@@ -36,22 +36,8 @@ extern int8_t RSSI;                     //当前读到的卡的RSSI值
 
 
 
-/* ADD BEGIN - 手持化改造：外部声明 */
-extern uint8_t ESP8266_IsConnected(void);
-extern void ESP8266_ConnectToAP(void);
-/* ADD END */
-
 Send_Setting send_settting;
-/* ADD BEGIN - 优化后的心跳与断线计数 */
-//volatile int disconnect = 0;
-
-#define HEARTBEAT_INTERVAL_MS   30000   /* 心跳间隔改为30秒（原60秒） */
-#define MAX_LOST_HEARTBEAT      3       /* 连续3次无响应判定断线（原10次） */
-
-volatile int lost_heartbeat = 0;        /* 替代原来的 disconnect */
-static uint32_t last_keepalive = 0;     /* 应用层保活计时（5分钟发送一次） */
-/* ADD END */
-
+volatile int disconnect = 0;
 volatile u8 search = 0;                 //读卡标志，0为暂停，1为读卡中
 
 int main(void)
@@ -60,11 +46,6 @@ int main(void)
 
     memset(ID_temp, 0xFF, sizeof(ID_temp));
     Hardware_Init();				//初始化外围硬件
-
-    /*ADD BEGIN*/
-    // 插入临时调用,之后可删去
-    WIFI_SaveConfig("SSID", "password");
-	/*ADD END*/
 
     ESP8266_Init();					//初始化ESP8266
 
@@ -99,29 +80,6 @@ int main(void)
 
     while(1)
     {
-        /* ADD BEGIN - 定期检查 WiFi 连接，断开则自动重连（每10秒检查一次） */
-        static uint32_t last_wifi_check = 0;
-        if (GetTick() - last_wifi_check >= 10000) {
-            if (!ESP8266_IsConnected()) {
-                OLED_Clear();
-                OLED_ShowString(1, 1, "WiFi Lost!     ");
-                OLED_ShowString(2, 1, "Reconnecting...");
-                ESP8266_ConnectToAP();                /* 重连热点 */
-                /* 重连后需要重新建立 MQTT 连接 */
-                OLED_ShowString(3, 1, "MQTT Reconnect ");
-                while (Broker_Link()) {
-                    DelayXms(500);
-                }
-                Broker_Subscribe();
-                OLED_Clear();
-                OLED_ShowString(1, 1, "WiFi & MQTT OK ");
-                DelayXms(1000);
-                OLED_Clear();
-            }
-            last_wifi_check = GetTick();
-        }
-        /* ADD END */
-
         if(search)
         {
             /***********读卡中*************/
@@ -138,6 +96,8 @@ int main(void)
 //			UsartPrintf(USART_DEBUG, "%02X\r\n", RFID_buf[2]);
                 if(RFID_Unpacket() == 1)
                 {
+                    if(!RFID_CheckDuplicate(RFIDCard, RSSI))
+                    {
                     sprintf(oled_str, "%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X ",
                             RFIDCard[0], RFIDCard[1], RFIDCard[2], RFIDCard[3],
                             RFIDCard[4], RFIDCard[5], RFIDCard[6], RFIDCard[7],
@@ -212,6 +172,7 @@ int main(void)
                         new_objetct[tempcard].serial_number = tempcard;
                         strcpy(new_objetct[tempcard].card, oled_str);
                     }
+                    } // CheckDuplicate 为非重复
                 }
             }
         }
@@ -241,8 +202,7 @@ int main(void)
             flash_w_flag = -1;
         }
 
-        /* ADD BEGIN - 使用新心跳间隔和 lost_heartbeat */
-        /*if (GetTick() - send_settting.time >= 60000 && !send_settting.send_reagy)
+        if(GetTick() - send_settting.time >= 60000 && !send_settting.send_reagy)
         {
             Broker_Ping();
             send_settting.time = GetTick();
@@ -254,24 +214,9 @@ int main(void)
             send_settting.send_reagy = 0;
             disconnect++;
             ESP8266_Clear();
-        }*/
-        if (GetTick() - send_settting.time >= HEARTBEAT_INTERVAL_MS && !send_settting.send_reagy)
-        {
-            Broker_Ping();
-            send_settting.time = GetTick();
-            lost_heartbeat++;
         }
-        /* ADD END */
 
-        /* ADD BEGIN - 应用层保活：每5分钟发送一次空消息，防止手机热点NAT超时 */
-        if (GetTick() - last_keepalive >= 300000) {
-            Broker_SendKeepAlive();   /* 此函数需要在 Broker.c 中实现 */
-            last_keepalive = GetTick();
-        }
-        /* ADD END */
-        
-        /* ADD BEGIN - 缩短断线判断阈值 */
-          /*if (disconnect >= 10) //认为断连
+        if(disconnect >= 10) //认为断连
         {
             UsartPrintf(USART_DEBUG, "Disconnect\r\n");
             ESP8266_Init();
@@ -286,25 +231,8 @@ int main(void)
             UsartPrintf(USART_DEBUG, "Connect again\r\n");
             disconnect = 0;
             OLED_Clear();
-        }*/
-        if (lost_heartbeat >= MAX_LOST_HEARTBEAT) //认为断连
-        {
-            UsartPrintf(USART_DEBUG, "Disconnect\r\n");
-            ESP8266_Init();
-            Connect.cmd = Broker_Address;
-            Connect.res = "CONNECT";
-            Connect.debug = 0;
-            while (Broker_Link())			//接入OneNET
-            {
-                ESP8266_SendCmd(&Connect);
-                DelayXms(500);
-            }
-            UsartPrintf(USART_DEBUG, "Connect again\r\n");
-            lost_heartbeat = 0;   /* 重置计数 */
-            OLED_Clear();
         }
-        /* ADD END */
-      
+
         dataPtr = ESP8266_GetIPD(0);
         if(dataPtr != NULL)
             Broker_RevPro(dataPtr);
@@ -312,6 +240,71 @@ int main(void)
     }
 
 }
+/*
+************************************************************
+*	函数名称：	system_clock_config
+*
+*	函数功能：	配置系统时钟 72MHz
+*               HEXT(8MHz) -> PLL x9 -> 72MHz
+*
+*	入口参数：	无
+*
+*	返回参数：	无
+*
+*	说明：		替代 STM32 SetSysClockTo72()
+************************************************************
+*/
+void system_clock_config(void)
+{
+    /* 复位 CRM */
+    crm_reset();
+
+    /* 开启外部高速晶振 HEXT(8MHz) */
+    crm_clock_source_enable(CRM_CLOCK_SOURCE_HEXT, TRUE);
+
+    /* 等待晶振稳定 */
+    while(crm_hext_stable_wait() == ERROR)
+    {
+    }
+
+    /* PLL: HEXT x9 = 72MHz */
+    crm_pll_config(CRM_PLL_SOURCE_HEXT, CRM_PLL_MULT_9, CRM_PLL_OUTPUT_RANGE_LE72MHZ);
+
+    /* 使能 PLL */
+    crm_clock_source_enable(CRM_CLOCK_SOURCE_PLL, TRUE);
+
+    /* 等待 PLL 锁定 */
+    while(crm_flag_get(CRM_PLL_STABLE_FLAG) != SET)
+    {
+    }
+
+    /* AHB 不分频: HCLK = 72MHz */
+    crm_ahb_div_set(CRM_AHB_DIV_1);
+
+    /* APB2 不分频: PCLK2 = 72MHz */
+    crm_apb2_div_set(CRM_APB2_DIV_1);
+
+    /* APB1 不分频: PCLK1 = 72MHz */
+    crm_apb1_div_set(CRM_APB1_DIV_1);
+
+    /* 自动调速模式 */
+    crm_auto_step_mode_enable(TRUE);
+
+    /* 切换系统时钟到 PLL */
+    crm_sysclk_switch(CRM_SCLK_PLL);
+
+    /* 等待切换完成 */
+    while(crm_sysclk_switch_status_get() != CRM_SCLK_PLL)
+    {
+    }
+
+    /* 关闭自动调速 */
+    crm_auto_step_mode_enable(FALSE);
+
+    /* 更新 system_core_clock 为 72MHz */
+    system_core_clock_update();
+}
+
 /*
 ************************************************************
 *	函数名称：	Hardware_Init
@@ -329,6 +322,9 @@ void Hardware_Init(void)
 {
     /* 使能 FPU（Cortex-M4F 需要） */
     SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2));
+
+    /* 配置系统时钟: HEXT(8MHz) -> PLL x9 -> 72MHz */
+    system_clock_config();
 
     nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
 

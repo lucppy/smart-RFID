@@ -9,15 +9,12 @@
 #include "oled.h"
 #include "timer.h"
 #include "delay.h"
-#include "Flash.h"
 
 //C��
 #include <string.h>
 #include <stdio.h>
 
-/* CHANGE BEGIN */
-//#define ESP8266_WIFI_INFO		"AT+CWJAP=\"HiWiFi\",\"5555720720\",\"d4:ee:07:03:e7:54\"\r\n"
-/* CHANGE END */
+#define ESP8266_WIFI_INFO		"AT+CWJAP=\"HiWiFi\",\"5555720720\",\"d4:ee:07:03:e7:54\"\r\n"
 
 unsigned char esp8266_buf[512];
 unsigned short esp8266_cnt = 0, esp8266_cntPre = 0;
@@ -39,76 +36,6 @@ void ESP8266_Clear(void)
     memset(esp8266_buf, 0, sizeof(esp8266_buf));
     esp8266_cnt = 0;
 }
-
-/* ADD BEGIN - ��̬�����ȵ㣨��FLASH��ȡSSID/���룩 */
-
-/**
-  * @brief   ������ FLASH �б���� WiFi �ȵ�
-  * @param   ��
-  * @retval  ��
-  * @note    �᳢������10�Σ�ÿ�μ��2�룻ʧ�ܺ� OLED ��ʾ���󲢽�����ѭ�����ɸ�Ϊ������������
-  */
-void ESP8266_ConnectToAP(void)
-{
-    char ssid[33] = { 0 };
-    char pwd[33] = { 0 };
-    char cmd_buf[128];
-    uint8_t retry = 0;
-    ESP8266_CMD connectCmd;
-
-    /* �� FLASH ��ȡ WiFi ���� */
-    if (!WIFI_LoadConfig(ssid, pwd, 33)) {
-        OLED_Clear();
-        OLED_ShowString(1, 1, "No WiFi config!");
-        OLED_ShowString(2, 1, "Please set via");
-        OLED_ShowString(3, 1, "USB or UART");
-        while (1);  /* ִֹͣ�У��ȴ��ⲿ���� */
-    }
-
-    /* ���� AT+CWJAP ���� */
-    sprintf(cmd_buf, "AT+CWJAP=\"%s\",\"%s\"\r\n", ssid, pwd);
-    connectCmd.cmd = cmd_buf;
-    connectCmd.res = "GOT IP";
-    connectCmd.debug = 1;   /* ������������ڣ����ڹ۲� */
-
-    OLED_ShowString(4, 1, "Connecting WiFi ");
-    while (ESP8266_SendCmd(&connectCmd) && retry++ < 10) {
-        DelayXms(2000);
-        OLED_ShowString(4, 1, "Retry...       ");
-    }
-
-    if (retry >= 10) {
-        OLED_ShowString(4, 1, "WiFi Failed!   ");
-        while (1);  /* ����ʧ�ܣ�ֹͣ */
-    }
-    else {
-        OLED_ShowString(4, 1, "WiFi Connected ");
-        DelayXms(500);
-    }
-}
-
-/**
-  * @brief   ��� ESP8266 �Ƿ������� AP
-  * @param   ��
-  * @retval  1 - ������, 0 - δ����
-  * @note    ͨ������ AT+CWJAP? ��������Ӧ
-  */
-uint8_t ESP8266_IsConnected(void)
-{
-    ESP8266_CMD checkCmd;
-    checkCmd.cmd = "AT+CWJAP?\r\n";
-    checkCmd.res = "+CWJAP:\"";
-    checkCmd.debug = 0;
-
-    ESP8266_Clear();
-    if (ESP8266_SendCmd(&checkCmd) == 0) {
-        /* �ҵ� +CWJAP:" ˵�������� */
-        return 1;
-    }
-    return 0;
-}
-/* ADD END */
-
 
 //==========================================================
 //	�������ƣ�	ESP8266_WaitRecive
@@ -307,18 +234,13 @@ void ESP8266_Init(void)
 
     /* ADD BEGIN - �滻Ϊ��̬�ȵ����� */
 //    UsartPrintf(USART_DEBUG, "4. CWJAP\r\n");
-/*  OLED_ShowString(4, 1, "4.CWJAP...");
+    OLED_ShowString(4, 1, "4.CWJAP...");
     ESP8266_Connect.cmd = ESP8266_WIFI_INFO;
     ESP8266_Connect.res = "GOT IP";
     while(ESP8266_SendCmd(&ESP8266_Connect))
     {
         DelayXms(5000);
-    }*/
-
-    
-    OLED_ShowString(4, 1, "4.CWJAP...");
-    ESP8266_ConnectToAP();   /* ʹ�ô�FLASH��ȡ���õ����Ӻ��� */
-    /* ADD END */
+    }
 
     UsartPrintf(USART_DEBUG, "5. ESP8266 Init OK\r\n");
     OLED_Clear();

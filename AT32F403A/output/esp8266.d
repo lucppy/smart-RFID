@@ -41,6 +41,5 @@
 .\output\esp8266.o: .\OLED\oled.h
 .\output\esp8266.o: .\system\timer.h
 .\output\esp8266.o: .\hardware\inc\delay.h
-.\output\esp8266.o: .\system\Flash.h
 .\output\esp8266.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\string.h
 .\output\esp8266.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\stdio.h
