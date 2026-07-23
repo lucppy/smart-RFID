@@ -1,0 +1,25 @@
+#ifndef _OBJECT_H
+#define _OBJECT_H
+
+#include <stdio.h>
+#include <string.h>
+typedef struct buffer1
+{
+	
+	uint8_t	serial_number;		//搴忓彿
+	
+	char card[64];		//鍗″彿
+	
+	char name[16];			//鍚嶅瓧
+	
+	char note[32];		//澶囨敞
+	
+	int RSSI;
+	
+}  Object;
+
+typedef struct buffer2
+{
+	
+	uint8_t	send_reagy;		//鍑嗗
+iconv: user/Object.h:24:46: cannot convert

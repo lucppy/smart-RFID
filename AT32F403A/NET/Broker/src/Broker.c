@@ -1,19 +1,19 @@
-//��Ƭ��ͷ�ļ�
+// MCU header
 #include "at32f403a_407.h"
 
-//�����豸
+// Network device
 #include "esp8266.h"
 
-//Э���ļ�
+// Protocol files
 #include "Broker.h"
 #include "mqttkit.h"
 #include "Object.h"
 
-//Ӳ������
+// Hardware driver
 #include "usart.h"
 #include "delay.h"
 
-//C��
+// C library
 #include <string.h>
 #include <stdio.h>
 #include "cJSON.h"
@@ -56,12 +56,10 @@ _Bool Broker_Link(void)
 
     unsigned char *dataPtr;
 
-    char authorization_buf[160];
-
     _Bool status = 1;
 
 
-    if(MQTT_PacketConnect(PROID, authorization_buf, DEVICE_NAME, 60, 1, MQTT_QOS_LEVEL0, NULL, NULL, 0, &mqttPacket) == 0)
+    if(MQTT_PacketConnect(PROID, ACCESS_KEY, DEVICE_NAME, 60, 1, MQTT_QOS_LEVEL0, NULL, NULL, 0, &mqttPacket) == 0)
     {
         ESP8266_SendData(mqttPacket._data, mqttPacket._len);//�ϴ�ƽ̨
         dataPtr = ESP8266_GetIPD(250);									//�ȴ�ƽ̨��Ӧ
@@ -366,8 +364,9 @@ void Broker_RevPro(unsigned char *cmd)
                     }
                 }
     
-                send_settting.time = GetTick();
                 ESP8266_Clear();
+                // do NOT reset send_settting.time here
+                // PINGREQ must still fire every 60s even while receiving
                 search_json = cJSON_GetObjectItem(params_json, "search");
                 if(search_json != NULL)
                 {
@@ -385,8 +384,12 @@ void Broker_RevPro(unsigned char *cmd)
                 }
 
                 cJSON_Delete(raw_json);
-                break;
+
+                MQTT_FreeBuffer(cmdid_topic);
+                MQTT_FreeBuffer(req_payload);
             }
+
+            break;
 
         case MQTT_PKT_PUBACK:														//����Publish��Ϣ���������ظ���Ack
 

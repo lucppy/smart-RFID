@@ -6,13 +6,13 @@
 typedef struct buffer1
 {
 	
-	uint8_t	serial_number;		//ĞòºÅ
+	uint8_t	serial_number;		//åºå·
 	
-	char card[64];		//¿¨ºÅ
+	char card[64];		//å¡å·
 	
-	char name[16];			//Ãû×Ö
+	char name[16];			//åå­—
 	
-	char note[32];		//±¸×¢
+	char note[32];		//å¤‡æ³¨
 	
 	int RSSI;
 	
@@ -21,13 +21,13 @@ typedef struct buffer1
 typedef struct buffer2
 {
 	
-	uint8_t	send_reagy;		//×¼±¸·¢ËÍ±êÖ¾Î»
+	uint8_t	send_reagy;		//å‡†å¤‡å‘é€æ ‡å¿—ä½
 	
-	u32 time;		//ÉÏÒ»´Î·¢ËÍÊ±¼ä
+	u32 time;		//ä¸Šä¸€æ¬¡å‘é€æ—¶é—´
 	
-	u16 sendwhich;   //Ò»´Î·¢ËÍÄÄ¼¸¸öobject
+	u16 sendwhich;   //ä¸€æ¬¡å‘é€å“ªå‡ ä¸ªobject
 	
-	u8 send_number;  //×Ü¹²·¢¶àÉÙ¸ö
+	u8 send_number;  //æ€»å…±å‘å¤šå°‘ä¸ª
 	
 }  Send_Setting;
 

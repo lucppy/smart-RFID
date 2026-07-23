@@ -25,6 +25,8 @@ void ESP8266_SendData(unsigned char *data, unsigned short len);
 
 unsigned char *ESP8266_GetIPD(unsigned short timeOut);
 
+_Bool ESP8266_CheckClosed(void);
+
 void WIFI_W(uint32_t add1, uint32_t add2, char* SSID, char* PWD);
 
 void WIFI_R(uint32_t add1, uint32_t add2);

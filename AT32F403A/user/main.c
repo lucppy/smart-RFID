@@ -16,7 +16,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define Broker_Address		"AT+CIPSTART=\"TCP\",\"192.168.199.100\",1883\r\n"//MQTT代理服务器地址
+#define Broker_Address		"AT+CIPSTART=\"TCP\",\"broker.emqx.io\",1883\r\n"//MQTT代理服务器地址
 #include "Object.h"
 void Hardware_Init(void);
 void Read_Card(void);
@@ -236,6 +236,10 @@ int main(void)
         dataPtr = ESP8266_GetIPD(0);
         if(dataPtr != NULL)
             Broker_RevPro(dataPtr);
+        else if(ESP8266_CheckClosed())
+        {
+            disconnect = 10;
+        }
 
     }
 

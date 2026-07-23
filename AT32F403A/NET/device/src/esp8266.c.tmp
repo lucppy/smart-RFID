@@ -1,0 +1,26 @@
+//锟斤拷片锟斤拷头锟侥硷拷
+#include "at32f403a_407.h"
+
+//锟斤拷锟斤拷锟借备锟斤拷锟斤拷
+#include "esp8266.h"
+
+//硬锟斤拷锟斤拷锟斤拷
+#include "usart.h"
+#include "oled.h"
+#include "timer.h"
+#include "delay.h"
+
+//C锟斤拷
+#include <string.h>
+#include <stdio.h>
+
+#define ESP8266_WIFI_INFO		"AT+CWJAP=\"HiWiFi\",\"5555720720\",\"d4:ee:07:03:e7:54\"\r\n"
+
+unsigned char esp8266_buf[512];
+unsigned short esp8266_cnt = 0, esp8266_cntPre = 0;
+extern u8 time;
+//==========================================================
+//	锟斤拷锟斤拷锟斤拷锟狡ｏ拷	ESP8266_Clear
+//
+//	锟斤拷锟斤拷锟斤拷锟杰ｏ拷	锟斤拷栈锟斤拷锟
+iconv: NET/device/src/esp8266.c:25:56: cannot convert
