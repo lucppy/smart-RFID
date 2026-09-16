@@ -40,3 +40,4 @@
 .\output\rfid.o: .\hardware\inc\delay.h
 .\output\rfid.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\string.h
 .\output\rfid.o: .\hardware\inc\usart.h
+.\output\rfid.o: D:\keil\Keil MDK\core\ARM\ARMCC\Bin\..\include\math.h

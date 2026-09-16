@@ -2,6 +2,7 @@
 #include "delay.h"
 #include "string.h"
 #include "usart.h"
+#include "math.h"
 
 u8 RFID_TxPacket[7];
 u8 RFID_buf[512];
@@ -18,6 +19,9 @@ static uint32_t rfid_last_poll_tick  = 0;
 static uint32_t rfid_last_hit_tick   = 0;
 static uint8_t  rfid_hit_streak      = 0;
 static uint8_t  rfid_miss_streak     = 0;
+
+/* 接收帧状态: 1=完整帧已收, 冻结直到 Clear */
+static uint8_t  rfid_frame_pending   = 0;
 
 /* RSSI趋势状态 */
 static int8_t rssi_history[RSSI_TREND_WINDOW];
@@ -169,17 +173,85 @@ static void RSSI_PushTrend(int8_t rssi)
     }
 }
 
+/*
+ * LRC校验: 除校验字段本身外所有字节的校验和与0x100求模，
+ * 再用0x100减去模。返回1=校验通过, 0=失败。
+ */
+static u8 RFID_LRC_Check(u8 *buf, u16 len)
+{
+    u16 i;
+    u16 sum = 0;
+
+    if (len < 2)
+        return Check_False;
+
+    for (i = 0; i < len - 1; i++)
+        sum += buf[i];
+
+    if (((0x100 - (sum % 0x100)) & 0xFF) == buf[len - 1])
+        return Check_True;
+    else
+        return Check_False;
+}
+
 u8 Get_Checksum(void)
 {
-    u8 i = 1;
-    u32 sum = 0;
-    while (i < RFID_cnt - 1)
-    {
-        sum += RFID_buf[i++];
-    }
-    if ((sum & 0x000000FF) == RFID_buf[RFID_cnt - 1])
-        return Check_True;
-    else return Check_False;
+    return RFID_LRC_Check(RFID_buf, RFID_cnt);
+}
+
+/*
+ * UCChip 官方 RSSI 计算 (Calculate_Rssi)
+ * data: 4字节 RSSI 原始数据 (含 mode 位)
+ * epc_len: EPC 长度 (字节)
+ * 返回 dBm, 范围 [-90, 0]
+ */
+static const uint8_t para_B[5][8] = {
+    {43, 43, 45, 49, 43, 43, 45, 49},
+    {43, 43, 45, 49, 43, 43, 45, 49},
+    {43, 43, 45, 49, 43, 43, 45, 49},
+    {53, 53, 48, 43, 49, 45, 43, 43},
+    {47, 47, 47, 47, 46, 43, 43, 43}
+};
+
+static const int para_C[5][8] = {
+    { 43,  43,  45,  49,  43,  43,  45,  49},
+    { 43,  43,  45,  49,  43,  43,  45,  49},
+    { 43,  43,  45,  49,  43,  43,  45,  49},
+    {-283,-283,-283,-283,-283,-283,-283,-283},
+    {-303,-283,-253,-238,-304,-313,-280,-266}
+};
+
+static int8_t RFID_ParseRSSI(uint8_t *data, uint8_t epc_len)
+{
+    uint8_t rssi_mode, hardware_mode;
+    int B, C, RssiVal = 0;
+    float rssi_temp;
+    union {
+        uint32_t u32;
+        uint8_t  chr[4];
+    } U;
+
+    if (epc_len == 0)
+        epc_len = 1;
+
+    rssi_mode     = (data[0] & 0xE0) >> 5;
+    hardware_mode = (data[0] & 0x1E) >> 1;
+
+    U.chr[3] = data[0] & 0x01;
+    U.chr[2] = data[1];
+    U.chr[1] = data[2];
+    U.chr[0] = data[3];
+
+    B = para_B[hardware_mode][rssi_mode];
+    C = para_C[hardware_mode][rssi_mode];
+
+    rssi_temp = (float)(U.u32 / epc_len);
+    RssiVal = (int)(B * log10(rssi_temp)) + C;
+
+    if (RssiVal > 0)      RssiVal = 0;
+    else if (RssiVal < -90) RssiVal = -90;
+
+    return (int8_t)RssiVal;
 }
 
 void Serial_SendByte(uint8_t Byte)
@@ -246,10 +318,21 @@ void RFID_SearchOnce(void)
 
     rfid_last_poll_tick = now;
 
-    Serial_SendByte(0xBB);
-    u8 temp[5] = {0x00, 0x22, 0x00, 0x00, 0x22};
-    Serial_SendArray(temp, 5);
-    Serial_SendByte(0x7E);
+    /* UCM601NC 实时盘存: A0 04 00 89 01 D2
+     * 帧: Head(A0) + Len(04) + Addr(00) + Cmd(89) + Data(天线01) + LRC
+     */
+    {
+        u8 cmd[6];
+        u16 sum;
+        cmd[0] = RFID_HEAD;              /* 帧头 0xA0 */
+        cmd[1] = 0x04;                   /* Len */
+        cmd[2] = RFID_ADDR;              /* 广播地址 0x00 */
+        cmd[3] = RFID_CMD_REALTIME_INV;  /* 0x89 实时盘存 */
+        cmd[4] = 0x01;                   /* 天线1 */
+        sum = cmd[0] + cmd[1] + cmd[2] + cmd[3] + cmd[4];
+        cmd[5] = (0x100 - (sum % 0x100)) & 0xFF;  /* LRC */
+        Serial_SendArray(cmd, 6);
+    }
 }
 
 uint8_t RFID_GetRxFlag(void)
@@ -266,57 +349,152 @@ void RFID_Clear(void)
 {
     memset(RFID_buf, 0, sizeof(RFID_buf));
     RFID_cnt = 0;
+    rfid_frame_pending = 0;
 }
 
 u8 RFID_Unpacket(void)
 {
-    if (RFID_buf[2] == 0x22 && Get_Checksum())
-    {
-        for (u8 i = 0; i < 12; i++)
-            RFIDCard[i] = RFID_buf[i + 8];
-        RSSI = RFID_buf[5];
+    u8 epc_len;
 
-        /* 命中: 加速轮询 + RSSI趋势 */
-        rfid_last_hit_tick = GetTick();
-        if (rfid_hit_streak < RFID_POLL_HIT_STREAK)
-            rfid_hit_streak++;
-        rfid_miss_streak = 0;
-
-        if (rfid_hit_streak >= RFID_POLL_HIT_STREAK &&
-            rfid_poll_interval_ms > RFID_POLL_MIN_MS + RFID_POLL_STEP_MS)
-        {
-            rfid_poll_interval_ms -= RFID_POLL_STEP_MS;
-        }
-        else if (rfid_poll_interval_ms <= RFID_POLL_MIN_MS + RFID_POLL_STEP_MS &&
-                 rfid_poll_interval_ms > RFID_POLL_MIN_MS)
-        {
-            rfid_poll_interval_ms = RFID_POLL_MIN_MS;
-        }
-        /* 已达最小间隔或已调整 → 重置计数 */
-        if (rfid_hit_streak >= RFID_POLL_HIT_STREAK)
-            rfid_hit_streak = 0;
-
-        RSSI_PushTrend(RSSI);
-        rssi_trend = RSSI_GetTrend();
-
-        RFID_Clear();
-        return 1;
-    }
-    else
+    /* 校验: 帧头 A0 + LRC */
+    if (RFID_buf[0] != RFID_HEAD || !Get_Checksum())
     {
         RFID_Clear();
         return 0;
     }
+
+    /* 只处理实时盘存(0x89)返回的标签数据帧。
+     * 帧: A0 Len Addr Cmd | Ant(1) PC(2) EPC(n) RSSI(4) Freq(3) | LRC
+     * Len = Addr + Cmd + Ant + PC + EPC + RSSI + Freq + LRC = 13 + n
+     * 因此 EPC 长度 n = Len - 13
+     */
+    if (RFID_buf[3] != RFID_CMD_REALTIME_INV)
+    {
+        RFID_Clear();
+        return 0;
+    }
+
+    /* Len 至少 13(EPC 为 0 字节的极限) */
+    if (RFID_buf[1] < 13)
+    {
+        RFID_Clear();
+        return 0;
+    }
+
+    /* EPC 长度 = Len - 13, EPC 从 buf[7] 开始(跳过 Head+Len+Addr+Cmd+Ant+PC) */
+    epc_len = RFID_buf[1] - 13;
+    if (epc_len > EPC_LEN)
+        epc_len = EPC_LEN;
+
+    memset(RFIDCard, 0, sizeof(RFIDCard));
+    memcpy(RFIDCard, &RFID_buf[7], epc_len);
+
+    /* RSSI 位置 = buf[7 + 实际EPC长度] */
+    RSSI = RFID_ParseRSSI(&RFID_buf[7 + (RFID_buf[1] - 13)], RFID_buf[1] - 13);
+
+    /* 命中: 加速轮询 + RSSI趋势 */
+    rfid_last_hit_tick = GetTick();
+    if (rfid_hit_streak < RFID_POLL_HIT_STREAK)
+        rfid_hit_streak++;
+    rfid_miss_streak = 0;
+
+    if (rfid_hit_streak >= RFID_POLL_HIT_STREAK &&
+        rfid_poll_interval_ms > RFID_POLL_MIN_MS + RFID_POLL_STEP_MS)
+    {
+        rfid_poll_interval_ms -= RFID_POLL_STEP_MS;
+    }
+    else if (rfid_poll_interval_ms <= RFID_POLL_MIN_MS + RFID_POLL_STEP_MS &&
+             rfid_poll_interval_ms > RFID_POLL_MIN_MS)
+    {
+        rfid_poll_interval_ms = RFID_POLL_MIN_MS;
+    }
+    /* 已达最小间隔或已调整 → 重置计数 */
+    if (rfid_hit_streak >= RFID_POLL_HIT_STREAK)
+        rfid_hit_streak = 0;
+
+    RSSI_PushTrend(RSSI);
+    rssi_trend = RSSI_GetTrend();
+
+    RFID_Clear();
+    return 1;
 }
 
 void USART1_IRQHandler(void)
 {
     if (usart_interrupt_flag_get(USART1, USART_RDBF_FLAG) != RESET)
     {
-        if (RFID_cnt >= sizeof(RFID_buf)) RFID_cnt = 0;
-        RFID_buf[RFID_cnt] = usart_data_receive(USART1);
-        if (RFID_buf[RFID_cnt] == 0x7E) RFID_RxFlag = 1;
-        else RFID_cnt++;
+        u8 byte = usart_data_receive(USART1);
+
+        /* 已有完整帧待处理, 丢弃后续字节直到 Clear */
+        if (rfid_frame_pending)
+        {
+            usart_flag_clear(USART1, USART_RDBF_FLAG);
+            return;
+        }
+
+        /* 非帧头且缓冲为空: 丢弃, 等待 A0 同步 */
+        if (RFID_cnt == 0 && byte != RFID_HEAD)
+        {
+            usart_flag_clear(USART1, USART_RDBF_FLAG);
+            return;
+        }
+
+        /* 防止越界 */
+        if (RFID_cnt >= sizeof(RFID_buf))
+        {
+            RFID_cnt = 0;
+            usart_flag_clear(USART1, USART_RDBF_FLAG);
+            return;
+        }
+
+        RFID_buf[RFID_cnt++] = byte;
+
+        /* 收到 Len 后校验完整帧长 = Len + 2 */
+        if (RFID_cnt == 2 && (RFID_buf[1] + 2) > sizeof(RFID_buf))
+        {
+            RFID_cnt = 0;   /* Len 异常, 重同步 */
+        }
+
+        /* 帧收齐判定 */
+        if (RFID_cnt >= 2 && RFID_cnt >= (RFID_buf[1] + 2))
+        {
+            RFID_RxFlag = 1;
+            rfid_frame_pending = 1;
+        }
+
         usart_flag_clear(USART1, USART_RDBF_FLAG);
     }
+}
+
+/*
+ * RFID_Init - 上电初始化: 停止盘存
+ * 在 USART1 初始化完成后调用一次
+ */
+void RFID_Init(void)
+{
+    /* 上电发一次停止盘存, 确保模块不自动盘存 */
+    u8 sc[5] = {RFID_HEAD, 0x03, RFID_ADDR, 0x8C, 0xD1};
+    Serial_SendArray(sc, 5);
+    DelayXms(50);
+}
+
+/*
+ * RFID_Start - 开始实时盘存 0x89 (只发一次, 模块持续盘存)
+ * 帧: A0 04 00 89 01 D2
+ */
+void RFID_Start(void)
+{
+    u8 cmd[6] = {RFID_HEAD, 0x04, RFID_ADDR, RFID_CMD_REALTIME_INV, 0x01, 0xD2};
+    Serial_SendArray(cmd, 6);
+}
+
+/*
+ * RFID_Stop - 停止盘存命令 0x8C
+ * 帧: A0 03 00 8C D1
+ */
+void RFID_Stop(void)
+{
+    u8 sc[5] = {RFID_HEAD, 0x03, RFID_ADDR, 0x8C, 0xD1};
+    Serial_SendArray(sc, 5);
+    RFID_Clear();
 }

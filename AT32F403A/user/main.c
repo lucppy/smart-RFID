@@ -16,7 +16,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define Broker_Address		"AT+CIPSTART=\"TCP\",\"broker.emqx.io\",1883\r\n"//MQTT代理服务器地址
+#define Broker_Address		"AT+CIPSTART=\"TCP\",\"10.59.127.53\",1883\r\n"//MQTT代理服务器地址
 #include "Object.h"
 void Hardware_Init(void);
 void Read_Card(void);
@@ -80,6 +80,18 @@ int main(void)
 
     while(1)
     {
+        /* search 边沿检测: 0→1 发一次盘存, 1→0 发停止 */
+        static u8 last_search = 0;
+        if (last_search == 0 && search == 1)
+        {
+            RFID_Start();       /* 0→1 开始盘存(只发一次) */
+        }
+        if (last_search == 1 && search == 0)
+        {
+            RFID_Stop();        /* 1→0 停止盘存 */
+        }
+        last_search = search;
+
         if(search)
         {
             /***********读卡中*************/
@@ -88,7 +100,6 @@ int main(void)
                 0, 1, 2
             }, 3);
             OLED_ShowString(1, 7, "..."); //读卡中...
-            RFID_SearchOnce();
             RFID_CleanExpired();
             Read_Card();
             if(RFID_GetRxFlag() == 1)
@@ -339,6 +350,8 @@ void Hardware_Init(void)
     Usart2_Init(115200);
 
     Usart3_Init(115200);
+
+    RFID_Init();				//关闭RFID蜂鸣器
 
     Timer_Init();
 

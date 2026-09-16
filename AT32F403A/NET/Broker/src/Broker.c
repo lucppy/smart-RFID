@@ -112,7 +112,7 @@ uint32_t Broker_FillBuf(char *buf)
     char text[48];
 
     memset(text, 0, sizeof(text));
-    sprintf(text,  "{\"send_number\":%d,\"params\":{", send_settting.send_number);
+    sprintf(text,  "{\"deviceId\":\"%s\",\"send_number\":%d,\"params\":{", DEVICE_NAME, send_settting.send_number);
     strcat(buf, text);
 
     if(send_settting.send_number > 0 && send_settting.sendwhich != 0)
@@ -339,6 +339,7 @@ void Broker_RevPro(unsigned char *cmd)
 
     cJSON *raw_json, *params_json,*id_json,*delete_json;
     cJSON *search_json;
+    cJSON *ping_json;
 
     type = MQTT_UnPacketRecv(cmd);
     switch(type)
@@ -367,6 +368,17 @@ void Broker_RevPro(unsigned char *cmd)
                 ESP8266_Clear();
                 // do NOT reset send_settting.time here
                 // PINGREQ must still fire every 60s even while receiving
+
+                // handle ping command
+                ping_json = cJSON_GetObjectItem(params_json, "ping");
+                if(ping_json != NULL)
+                {
+                    char reply[64];
+                    sprintf(reply, "{\"deviceId\":\"%s\"}", DEVICE_NAME);
+                    Broker_Publish("asset/post", reply);
+                    UsartPrintf(USART_DEBUG, "ping reply sent\r\n");
+                }
+
                 search_json = cJSON_GetObjectItem(params_json, "search");
                 if(search_json != NULL)
                 {

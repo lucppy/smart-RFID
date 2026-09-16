@@ -22,6 +22,11 @@
 /* RSSI趋势窗口 */
 #define RSSI_TREND_WINDOW     8
 
+/* UCM601NC (UCChip UHF) 串口协议 */
+#define RFID_HEAD              0xA0   /* 帧头 */
+#define RFID_ADDR              0x00   /* 广播地址 */
+#define RFID_CMD_REALTIME_INV  0x89   /* 实时盘存命令(实时上传标签) */
+
 typedef struct
 {
     uint8_t  epc[EPC_LEN];
@@ -33,6 +38,9 @@ typedef struct
 
 
 void RFID_SearchOnce(void);
+void RFID_Init(void);
+void RFID_Stop(void);
+void RFID_Start(void);
 
 uint8_t RFID_GetRxFlag(void);
 
